@@ -2,8 +2,6 @@
   (:gen-class)
   (:require [me.raynes.fs :as fs]))
 
-;;  TODO: replace recursive calls with recur
-
 (defn popu-list
   "creates nested list tree structure of the directory supplied by argument"
   [f]
@@ -15,21 +13,20 @@
              (filter #(not (fs/directory? %)) cont))
         (map popu-list (filter fs/directory? cont))))))
 
-(defn draw-space-lines
-  "render lines of pprint-ftree(*)"
-  [depth-count]
-  ;; TODO: extend to variable spacing, lineless rendering
-  (let [north-east "\u2514"
-        north-south "\u2502"
-        north-east-south "\u251c"]
+(defn render-lines
+  [d]
+  (let [north-east "\u2514"  space " "
+        north-south "\u2502" north-east-south "\u251c"]
     (cond
-      (empty? depth-count) ""
-      (and (= 1 (first depth-count))
-           (not (integer? (second depth-count)))) (str north-east (draw-space-lines (rest depth-count)))
-      (and (< 1 (first depth-count))
-           (not (integer? (second depth-count)))) (str north-east-south (draw-space-lines (rest depth-count)))
-      (and (< 0 (first depth-count))
-           (integer? (second depth-count))) (str north-south (draw-space-lines (rest depth-count))))))
+      (empty? d) ""
+      (and (= 1 (first d)) (not (integer? (second d))))
+        (str north-east (render-lines (rest d)))
+      (and (< 1 (first d)) (not (integer? (second d))))
+        (str north-east-south (render-lines (rest d)))
+      (and (< 1 (first d)) (integer? (second d)))
+        (str north-south (render-lines (rest d)))
+      (and (= 1 (first d)) (integer? (second d)))
+        (str space (render-lines (rest d))))))
 
 (defn pprint-ftree-1
   "pretty print file tree represented by recursive list structure"
@@ -45,23 +42,23 @@
                             (conj (into [] (drop-last dc))
                                   (dec (last dc))))
                           false))
-      :else (do
-              (print (draw-space-lines dc) (str "\b" current) "\n")
-              (pprint-ftree-1 (rest xs)
-                              (if p
-                                (conj dc (count (rest xs)))
-                                  (if (= 1 (last dc))
-                                    (into [] (drop-last dc))
-                                    (conj (into [] (drop-last dc)) (dec (last dc)))))
-                              false)))))
+      :else 
+        (do
+          (print (render-lines dc) (str "\b" current) "\n")
+          (pprint-ftree-1 (rest xs)
+                          (if p
+                            (conj dc (count (rest xs)))
+                            (if (= 1 (last dc))
+                              (into [] (drop-last dc))
+                              (conj (into [] (drop-last dc)) (dec (last dc)))))
+                          false)))))
 
 (defn pprint-ftree
   "pretty print file tree"
   [file-tree]
   (let [item-count (count (flatten file-tree))] ;; need to filter empty lists
     (pprint-ftree-1 file-tree [] true)
-    ;;(println "Total items: " item-count)
-    ))
+    (println "Total items: " item-count)))
 
 (defn -main
   [& args]

@@ -10,10 +10,13 @@ In short, treecl prettyprints the contents of the current directory recursively,
 
 - Download from https://github.com/ds2643/treecl.
 - Use Leiningen (http://leiningen.org/) to compile:
-    $ lein uberjar # creates package with code and all dependancies included
-
+```
+$ lein uberjar # creates package with code and all dependancies included
+```
 - Run:
-   $ java -cp treecl-0.1.0-standalone.jar
+```
+$ java -cp treecl-0.1.0-standalone.jar
+```
 
 ## Examples
 
